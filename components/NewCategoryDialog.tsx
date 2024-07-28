@@ -37,16 +37,19 @@ import { useTheme } from "next-themes";
 
 interface Props {
   type: TransactionType;
+  trigger: React.ReactElement; 
 }
 
-const NewCategoryDialog = ({ type }: Props) => {
+const NewCategoryDialog = ({ type, trigger }: Props) => {
   const theme = useTheme();
   const [isPending, startTransition] = useTransition();
   const [emojiOpen, emojiSetOpen] = useState(false);
   const [open, setOpen] = useState(false);
   const form = useForm<z.infer<typeof NewCategorySchema>>({
+    
     resolver: zodResolver(NewCategorySchema),
     defaultValues: {
+      
       name: "",
       icon: "",
       type,

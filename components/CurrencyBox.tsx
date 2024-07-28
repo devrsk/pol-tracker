@@ -1,7 +1,6 @@
 "use client";
 
 import * as React from "react";
-
 import { useMediaQuery } from "@/hooks/use-media-query";
 import { Button } from "@/components/ui/button";
 import { Drawer, DrawerContent, DrawerTrigger } from "@/components/ui/drawer";
@@ -10,22 +9,15 @@ import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { BudgetSchema } from "@/lib/schema";
 import { zodResolver } from "@hookform/resolvers/zod";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "./ui/form";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "./ui/form";
 import { Input } from "./ui/input";
-import { User } from "@prisma/client";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
-import { createBudget } from "@/actions/budgetActions";
 import { useBudgetStore } from "@/stores/budgetStore";
 import CurrencyPicker from "./CurrencyPicker";
 import { Currency } from "@/types";
+import { User } from "@prisma/client";
+import { createBudget } from "@/actions/budgetActions";
 
 interface Props {
   user: User;
@@ -36,8 +28,10 @@ export function CurrencyBox({ user }: Props) {
   const router = useRouter();
   const [isPending, startTransition] = React.useTransition();
   const [open, setOpen] = React.useState(false);
-  const isDesktop = useMediaQuery("(min-width: 768px)");
-  const [currency, setCurrency] = React.useState<Currency>();
+  const isDesktop = useMediaQuery("(min-width: 768px)"); // Ensure useMediaQuery is correctly imported
+  const [currency, setCurrency] = React.useState<Currency | undefined>();
+  const [currencyCode, setCurrencyCode] = React.useState<string>("");
+
   const form = useForm<z.infer<typeof BudgetSchema>>({
     resolver: zodResolver(BudgetSchema),
     defaultValues: {
@@ -53,7 +47,7 @@ export function CurrencyBox({ user }: Props) {
       currency: currency.code,
     };
     startTransition(() => {
-      createBudget({ ...data })
+      createBudget(data)
         .then((res) => {
           if (res.success && res.data) {
             router.push("/");
@@ -72,12 +66,17 @@ export function CurrencyBox({ user }: Props) {
     });
   };
 
+  React.useEffect(() => {
+    if (currency) {
+      setCurrencyCode(currency.code);
+    }
+  }, [currency]);
+
   if (isDesktop) {
     return (
       <div className="flex flex-col">
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            {/* budget name */}
             <FormField
               control={form.control}
               name="name"
@@ -92,7 +91,10 @@ export function CurrencyBox({ user }: Props) {
               )}
             />
 
-            <CurrencyPicker onCurrencyChange={setCurrency} />
+            <CurrencyPicker
+              currencyCode={currencyCode}
+              onCurrencyChange={setCurrency}
+            />
 
             <Button type="submit" className="mt-4" disabled={isPending}>
               Save
@@ -130,7 +132,10 @@ export function CurrencyBox({ user }: Props) {
             <DrawerContent className="w-full">
               <DialogTitle>Currencies</DialogTitle>
               <div className="mt-4 border-t">
-                <CurrencyPicker onCurrencyChange={setCurrency} />
+                <CurrencyPicker
+                  currencyCode={currencyCode}
+                  onCurrencyChange={setCurrency}
+                />
               </div>
             </DrawerContent>
           </Drawer>

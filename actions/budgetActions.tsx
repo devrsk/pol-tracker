@@ -3,6 +3,38 @@
 import prisma from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 
+/******************GET USER BUDGETS**********************************/
+export const getUserBudgets = async ({ userId }: { userId: string }) => {
+  try {
+    const budgets = await prisma.budget.findMany({
+      where: {
+        userId,
+      },
+      include: {
+        transactions: true,
+      },
+    });
+
+    if (budgets) {
+      return {
+        success: true,
+        data: budgets,
+      };
+    }
+
+    return {
+      success: false,
+      error: "Could not get user budgets, please try again later",
+    };
+  } catch (error) {
+    console.log(error);
+    return {
+      success: false,
+      error: "Internal Server Error, getting user budgets",
+    };
+  }
+};
+
 /******************CREATE BUDGET********************************** */
 export const createBudget = async ({
   budgetName,

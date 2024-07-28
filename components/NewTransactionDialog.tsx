@@ -51,7 +51,7 @@ import { useBudgetStore } from "@/stores/budgetStore";
 import { useRouter } from "next/navigation";
 
 interface Props {
-  trigger: React.ReactNode;
+  trigger: React.ReactNode; // The button or element to open the dialog
   type: TransactionType;
   categories: Category[];
   user: UserExt;
@@ -113,7 +113,7 @@ const NewTransactionDialog = ({ trigger, type, categories, user }: Props) => {
       })
         .then((res) => {
           if (res.success) {
-            console.log("transaction crated successfully");
+            console.log("transaction created successfully");
             setBudgetSummary({ budgetId: budget.id });
             setCategorySummary({ budgetId: budget.id });
             setHistoryYears({ budgetId: budget.id });
@@ -202,7 +202,6 @@ const NewTransactionDialog = ({ trigger, type, categories, user }: Props) => {
                         <PopoverContent className="w-full">
                           <Command>
                             <CommandInput placeholder="Search budgets..." />
-                            {/***************** * NEW BUDGET DIALOG************* */}
                             <NewBudgetDialog user={user} />
                             <CommandList>
                               <CommandEmpty>No budgets found.</CommandEmpty>
@@ -262,65 +261,62 @@ const NewTransactionDialog = ({ trigger, type, categories, user }: Props) => {
                             "text-red-500": type === "expense",
                           })}
                         >
-                          {type}
+                          Category
                         </span>
-                        Category
+                        <NewCategoryDialog type={type} trigger={<Button>Add Category</Button>} />
                       </FormLabel>
-                      <Popover
-                        open={openCategory}
-                        onOpenChange={setOpenCategory}
-                      >
+                      <Popover open={openCategory} onOpenChange={setOpenCategory}>
                         <PopoverTrigger asChild>
                           <FormControl>
                             <Button
-                              variant="outline"
+                              variant={"outline"}
                               role="combobox"
                               className={cn(
-                                "justify-between w-full",
+                                "justify-between",
                                 !field.name && "text-muted-foreground"
                               )}
                             >
                               {selectedCategory ? (
-                                <CategoryRow category={selectedCategory} />
+                                <>
+                                  <span>{selectedCategory.icon}</span>
+                                  <span>{selectedCategory.name}</span>
+                                </>
                               ) : (
-                                "Select Category"
+                                "Select category"
                               )}
+
                               <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                             </Button>
                           </FormControl>
                         </PopoverTrigger>
-                        <PopoverContent className="w-full">
+                        <PopoverContent className="w-auto p-0">
                           <Command>
                             <CommandInput placeholder="Search categories..." />
-                            {/***************** * NEW CATEGORY DIALOG************* */}
-                            <NewCategoryDialog type={type} />
-                            <CommandList>
-                              <CommandEmpty>No categories found.</CommandEmpty>
-                              <CommandGroup>
-                                {categories.map((category) => {
-                                  return (
-                                    <CommandItem
-                                      value={category.name}
-                                      key={category.name}
-                                      onSelect={(value) => {
-                                        field.onChange(value);
-                                        setOpenCategory(false);
-                                      }}
-                                    >
-                                      <Check
-                                        className={cn(
-                                          "mr-2 h-4 w-4",
-                                          category.name === field.value
-                                            ? "opacity-100"
-                                            : "opacity-0"
-                                        )}
-                                      />
-                                      <CategoryRow category={category} />
-                                    </CommandItem>
-                                  );
-                                })}
-                              </CommandGroup>
-                            </CommandList>
+                            <CommandEmpty>No categories found.</CommandEmpty>
+                            <CommandGroup>
+                              {categories.map((category) => {
+                                return (
+                                  <CommandItem
+                                    value={category.name}
+                                    key={category.name}
+                                    onSelect={(value) => {
+                                      field.onChange(value);
+                                      setOpenCategory(false);
+                                    }}
+                                  >
+                                    <Check
+                                      className={cn(
+                                        "mr-2 h-4 w-4",
+                                        category.name === field.value
+                                          ? "opacity-100"
+                                          : "opacity-0"
+                                      )}
+                                    />
+                                    <CategoryRow category={category} />
+                                  </CommandItem>
+                                );
+                              })}
+                            </CommandGroup>
                           </Command>
                         </PopoverContent>
                       </Popover>
@@ -336,47 +332,41 @@ const NewTransactionDialog = ({ trigger, type, categories, user }: Props) => {
               control={form.control}
               name="date"
               render={({ field }) => (
-                <FormField
-                  control={form.control}
-                  name="date"
-                  render={({ field }) => (
-                    <FormItem className="flex flex-col w-full">
-                      <FormLabel>Date</FormLabel>
-                      <Popover open={openDate} onOpenChange={setOpenDate}>
-                        <PopoverTrigger asChild>
-                          <FormControl>
-                            <Button
-                              variant={"outline"}
-                              className={cn(
-                                "pl-3 text-left font-normal",
-                                !field.value && "text-muted-foreground"
-                              )}
-                            >
-                              {field.value ? (
-                                format(field.value, "PPP")
-                              ) : (
-                                <span>Pick a date</span>
-                              )}
-                              <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                            </Button>
-                          </FormControl>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0" align="start">
-                          <Calendar
-                            mode="single"
-                            selected={field.value}
-                            onSelect={(value) => {
-                              field.onChange(value);
-                              setOpenDate(false);
-                            }}
-                            initialFocus
-                          />
-                        </PopoverContent>
-                      </Popover>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                <FormItem className="flex flex-col w-full">
+                  <FormLabel>Date</FormLabel>
+                  <Popover open={openDate} onOpenChange={setOpenDate}>
+                    <PopoverTrigger asChild>
+                      <FormControl>
+                        <Button
+                          variant={"outline"}
+                          className={cn(
+                            "pl-3 text-left font-normal",
+                            !field.value && "text-muted-foreground"
+                          )}
+                        >
+                          {field.value ? (
+                            format(field.value, "PPP")
+                          ) : (
+                            <span>Pick a date</span>
+                          )}
+                          <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                        </Button>
+                      </FormControl>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <Calendar
+                        mode="single"
+                        selected={field.value}
+                        onSelect={(value) => {
+                          field.onChange(value);
+                          setOpenDate(false);
+                        }}
+                        initialFocus
+                      />
+                    </PopoverContent>
+                  </Popover>
+                  <FormMessage />
+                </FormItem>
               )}
             />
 
@@ -416,10 +406,8 @@ const NewTransactionDialog = ({ trigger, type, categories, user }: Props) => {
               <Button
                 type="button"
                 variant="outline"
-                // disabled={!form.formState.isValid}
                 onClick={() => {
                   setOpenTransaction(false);
-                  // form.reset();
                 }}
               >
                 Cancel
