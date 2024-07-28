@@ -353,3 +353,70 @@ export const createTransaction = async ({
     };
   }
 };
+
+/******************GET USER TRANSACTION********************************** */
+export const getUserTransactions = async ({
+  budgetId,
+  date,
+}: {
+  budgetId: string;
+  date: DateRange;
+}) => {
+  try {
+    const transactions = await prisma.transaction.findMany({
+      where: {
+        budgetId,
+        date: {
+          gte: date.from,
+          lte: date.to,
+        },
+      },
+    });
+
+    if (transactions) {
+      return {
+        success: true,
+        data: transactions,
+      };
+    }
+
+    return {
+      success: false,
+      error: "Could not get user transactions, please try again later",
+    };
+  } catch (error) {
+    console.log(error);
+    return {
+      success: false,
+      error: "Internal Server Error, getting user transactions",
+    };
+  }
+};
+
+/******************DELETE TRANSACTION********************************** */
+export const deleteTransaction = async (id: string) => {
+  try {
+    const deletedTransaction = await prisma.transaction.delete({
+      where: { id },
+    });
+
+    if (deletedTransaction) {
+      revalidatePath("/transactions");
+      return {
+        success: true,
+        message: "Transaction deleted successfully",
+      };
+    }
+
+    return {
+      success: false,
+      error: "Unable to delete Transaction, please try again later",
+    };
+  } catch (error) {
+    console.log(error);
+    return {
+      success: false,
+      error: "Internal Server Error, deleting Transaction",
+    };
+  }
+};
