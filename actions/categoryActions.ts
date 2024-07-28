@@ -40,12 +40,6 @@ export const getCategorySummary = async ({
       },
     });
 
-    // const summary = await prisma.transaction.findMany({
-    //   where: {
-    //     budgetId,
-    //   },
-    // });
-
     if (summary) {
       revalidatePath("/");
       // console.log("summary", summary);
@@ -63,6 +57,35 @@ export const getCategorySummary = async ({
     return {
       success: error,
       error: "Internal Server Error, getting category summary",
+    };
+  }
+};
+
+/******************DELETE CATEGORY*************************************/
+export const deleteCategory = async (categoryId: string) => {
+  const deletedCategory = await prisma.category.delete({
+    where: {
+      id: categoryId,
+    },
+  });
+
+  if (deletedCategory) {
+    return {
+      success: true,
+      message: "Category Successfully deleted",
+    };
+  }
+
+  try {
+    return {
+      success: false,
+      error: "Unable to delete category, please try again later",
+    };
+  } catch (error) {
+    console.log(error);
+    return {
+      success: false,
+      error: "Internal Server Error,deleting category",
     };
   }
 };
@@ -87,6 +110,7 @@ export const createCategory = async (
 
     if (newCategory) {
       revalidatePath("/");
+      revalidatePath("/manage");
       return {
         success: true,
         message: `Category ${newCategory.name} created successfully`,
