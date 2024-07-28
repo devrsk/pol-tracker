@@ -34,20 +34,27 @@ const TransactionsHistory = ({ user }: Props) => {
     setUserTransactions({ budgetId: budget.id, date });
   }, [setUserBudgets, user.id, budget.id, setUserTransactions, date]);
 
+  const isValidTransactionType = (type: string): type is "income" | "expense" => {
+    return type === "income" || type === "expense";
+  };
+
   const TransactionColumnsData: TransactionColumnsType[] = [];
-  userTransactions.map((item) => {
-    const category = categories.find(
-      (category) => category.id === item.categoryId
-    );
-    const data = {
-      id: item.id,
-      categoryName: category?.name ?? "",
-      description: item.description,
-      date: format(item.date, "yyyy-MM-dd"),
-      type: item.type,
-      amount: formatPrice(item.amount, budget.currency),
-    };
-    TransactionColumnsData.push(data);
+  userTransactions.forEach((item) => {
+    const category = categories.find((category) => category.id === item.categoryId);
+
+    if (isValidTransactionType(item.type)) {
+      const data: TransactionColumnsType = {
+        id: item.id,
+        categoryName: category?.name ?? "",
+        description: item.description,
+        date: format(item.date, "yyyy-MM-dd"),
+        type: item.type,
+        amount: formatPrice(item.amount, budget.currency),
+      };
+      TransactionColumnsData.push(data);
+    } else {
+      console.error(`Invalid transaction type: ${item.type}`);
+    }
   });
 
   return (

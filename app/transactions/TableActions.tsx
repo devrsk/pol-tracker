@@ -13,7 +13,11 @@ interface Props {
 }
 
 const TableActions = ({ data }: Props) => {
-  const { budget, setUserTransactions } = useBudgetStore((state) => state);
+  const { budget, setUserTransactions, date } = useBudgetStore((state) => ({
+    budget: state.budget,
+    setUserTransactions: state.setUserTransactions,
+    date: state.date, // Make sure `date` is available in the store
+  }));
   const [isPending, startTransition] = useTransition();
 
   const handleDeleteTransaction = () => {
@@ -22,7 +26,7 @@ const TableActions = ({ data }: Props) => {
       deleteTransaction(data.id)
         .then((res) => {
           if (res.success) {
-            setUserTransactions({ budgetId: budget.id });
+            setUserTransactions({ budgetId: budget.id, date });
             return toast.success(res.message, { id: "delete-transaction" });
           } else {
             return toast.error(res.error, { id: "delete-transaction" });
@@ -44,7 +48,6 @@ const TableActions = ({ data }: Props) => {
         }
         onConfirm={handleDeleteTransaction}
       />
-
       <LuFileEdit className="w-5 h-5 cursor-pointer hover:bg-slate-500/20 rounded" />
     </div>
   );
