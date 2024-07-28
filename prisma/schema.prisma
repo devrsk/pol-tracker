@@ -29,12 +29,12 @@ model User {
 }
 
 model Settings {
-  id       String  @id @default(uuid()) // Use uuid() for auto-generated UUIDs
-  currency String
-
-  userId   String @unique
-  user     User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id       String  @id @default(uuid()) // Unique identifier for each record
+  currency String // Currency field
+  userId   String @unique // User identifier, must be unique
+  user     User   @relation(fields: [userId], references: [id], onDelete: Cascade) // Relationship to the User model
 }
+
 
 model Budget {
   id         String       @id @default(uuid()) // Use uuid() for auto-generated UUIDs

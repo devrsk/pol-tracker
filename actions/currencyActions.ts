@@ -3,54 +3,44 @@
 import prisma from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 
-export const updateSettings = async ({
+export const updateCurrency = async ({
   userId,
+  budgetId,
   currency,
-  budgetName,
 }: {
   userId: string;
   currency: string;
-  budgetName: string;
+  budgetId: string;
 }) => {
   try {
-    const updatedUser = await prisma.user.update({
+    const updatedBudget = await prisma.budget.update({
       where: {
-        id: userId,
+        id: budgetId,
+        userId,
       },
       data: {
-        budgets: {
-          create: {
-            name: budgetName,
-            currency: currency,  // Make sure to include all required fields
-          },
-        },
-        settings: {
-          upsert: {  // Use upsert to create if not exists, or update if exists
-            where: { userId },
-            update: { currency },
-            create: { currency, userId },
-          },
-        },
+        currency,
       },
     });
 
-    if (updatedUser) {
+    if (updatedBudget) {
       revalidatePath("/");
       return {
         success: true,
-        message: "Currency and budget updated successfully",
+        message: "Currency updated successfully",
+        data: updatedBudget,
       };
     }
 
     return {
       success: false,
-      error: "Unable to update currency or create budget, please try again later",
+      error: "Unable to update currency, please try again later",
     };
   } catch (error) {
     console.log(error);
     return {
       success: false,
-      error: "Internal Server Error, updating currency and budget",
+      error: "Internal Server Error, updating currency",
     };
   }
 };
