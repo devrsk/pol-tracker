@@ -21,11 +21,14 @@ export const updateSettings = async ({
         budgets: {
           create: {
             name: budgetName,
+            currency: currency,  // Make sure to include all required fields
           },
         },
         settings: {
-          create: {
-            currency,
+          upsert: {  // Use upsert to create if not exists, or update if exists
+            where: { userId },
+            update: { currency },
+            create: { currency, userId },
           },
         },
       },
@@ -35,19 +38,19 @@ export const updateSettings = async ({
       revalidatePath("/");
       return {
         success: true,
-        message: "Currency updated successfully",
+        message: "Currency and budget updated successfully",
       };
     }
 
     return {
       success: false,
-      error: "Unable to update currency, please try again later",
+      error: "Unable to update currency or create budget, please try again later",
     };
   } catch (error) {
     console.log(error);
     return {
       success: false,
-      error: "Internal Server Error, updating currency",
+      error: "Internal Server Error, updating currency and budget",
     };
   }
 };
