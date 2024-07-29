@@ -3,24 +3,15 @@ import { LoginSchema } from "@/lib/schema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { useState, useTransition } from "react";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
-
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { loginCredentials } from "@/actions/authActions";
+import { signIn } from "next-auth/react";
 
 interface Props {
   callbackUrl?: string;
@@ -39,22 +30,19 @@ const LoginForm = ({ callbackUrl }: Props) => {
     mode: "all",
   });
 
-  const onSubmit = (formData: z.infer<typeof LoginSchema>) => {
-    startTransition(() => {
-      loginCredentials(formData)
-        .then((res) => {
-          if (res.success) {
-            router.push(callbackUrl ? callbackUrl : "/");
-            router.refresh();
-            return toast.success(res.message);
-          } else {
-            return toast.error(res.error);
-          }
-        })
-        .catch((err) => {
-          console.log("LoginForm", err);
-          return toast.error("Invalid Credentials");
-        });
+  const onSubmit = async (formData: z.infer<typeof LoginSchema>) => {
+    startTransition(async () => {
+      const result = await signIn("credentials", {
+        redirect: false,
+        email: formData.email,
+        password: formData.password,
+      });
+
+      if (result?.error) {
+        toast.error("Invalid Credentials");
+      } else {
+        router.push(callbackUrl ? callbackUrl : "/");
+      }
     });
   };
 
@@ -120,7 +108,7 @@ const LoginForm = ({ callbackUrl }: Props) => {
         <Button
           type="submit"
           className="w-full"
-          disabled={!form.formState.isValid}
+          disabled={!form.formState.isValid || isPending}
         >
           Log In
         </Button>
@@ -134,28 +122,14 @@ const LoginForm = ({ callbackUrl }: Props) => {
           forgot password?
         </Link>
 
-        {/* <div className="flex items-center gap-x-5 my-3">
-          <div className="flex bg-slate-200 w-20 h-[0.5px]" />
-          or
-          <div className="flex bg-slate-200 w-20 h-[0.5px]" />
-        </div> */}
-
         {/* google login */}
+        {/* Uncomment and configure if needed */}
         {/* <Button
           type="button"
           className="w-full mb-3"
           variant="secondary"
           onClick={() => signIn("google", { callbackUrl: "/" })}
         >
-          <div className="relative mr-2">
-            <Image
-              alt="logo"
-              src="/images/google-icon.svg"
-              className="top-0 left-0 relative"
-              width={20}
-              height={20}
-            />
-          </div>
           Google
         </Button> */}
 
